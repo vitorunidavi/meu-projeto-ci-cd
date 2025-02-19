@@ -1,0 +1,19 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Certifique-se de que esta indentação está correta
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar ambiente
+        run: echo "Configuração do ambiente concluída!"
+
+      - name: Rodar teste básico
+        run: echo "Rodando testes..."
