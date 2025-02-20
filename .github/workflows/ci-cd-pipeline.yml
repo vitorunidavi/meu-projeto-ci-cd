@@ -77,24 +77,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-staging
     if: github.ref == 'refs/heads/main'  # Só executa na branch main
+    environment: production  # Usa um ambiente protegido para aprovação manual
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
 
       - name: Configurar ambiente de produção
         run: echo "Configurando ambiente de produção..."
-
-      - name: Aprovação manual para deploy em produção
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "👋 O deploy para produção está pronto! Por favor, aprove a execução."
-            })
-            core.setFailed("Aguardando aprovação manual para deploy em produção...")
 
       - name: Implantar em produção
         run: echo "Implantando aplicação em produção..."
