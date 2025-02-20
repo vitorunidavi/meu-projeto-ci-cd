@@ -9,13 +9,26 @@ on:
       - main
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
 
       - name: Configurar ambiente
+        run: echo "Configurando ambiente para lint..."
+
+      - name: Executar lint (verificação de formatação)
+        run: echo "Executando lint no código..."
+
+  build:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar ambiente de build
         run: echo "Configurando ambiente de build..."
 
       - name: Compilar código
@@ -28,15 +41,60 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Executar testes automatizados
-        run: echo "Rodando testes..."
+      - name: Instalar dependências
+        run: echo "Instalando dependências..."
 
-  deploy:
+      - name: Executar testes unitários
+        run: echo "Rodando testes unitários..."
+
+      - name: Executar testes de integração
+        run: echo "Rodando testes de integração..."
+
+  security-check:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Simular deploy
-        run: echo "Simulando deploy da aplicação..."
+      - name: Verificar vulnerabilidades de segurança
+        run: echo "Verificando vulnerabilidades de segurança..."
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: security-check
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar ambiente de staging
+        run: echo "Configurando ambiente de staging..."
+
+      - name: Implantar em staging
+        run: echo "Implantando aplicação em staging..."
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'  # Só executa na branch main
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar ambiente de produção
+        run: echo "Configurando ambiente de produção..."
+
+      - name: Aprovação manual para deploy em produção
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "👋 O deploy para produção está pronto! Por favor, aprove a execução."
+            })
+            core.setFailed("Aguardando aprovação manual para deploy em produção...")
+
+      - name: Implantar em produção
+        run: echo "Implantando aplicação em produção..."
